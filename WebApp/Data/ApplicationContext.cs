@@ -10,11 +10,14 @@ namespace WebApp.Data
 {
     public class ApplicationContext : DbContext
     {
-        public DbSet<Category> Category {get;set;}
-        public DbSet<ApplicationType> ApplicationType {get;set;}
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
-            
+
         }
+
+        public DbSet<Category> Category { get; set; }
+        public DbSet<ApplicationType> ApplicationType { get; set; }
+        public DbSet<Product> Product { get; set; }
+      
     }
 }
