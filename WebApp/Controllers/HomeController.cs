@@ -30,12 +30,28 @@ namespace WebApp.Controllers
         }
         public IActionResult Details(int id) 
         {
+            List<ShopingCart> ShoppingCartList = new List<ShopingCart>();
+            if (HttpContext.Session.Get<IEnumerable<ShopingCart>>(WC.SessionCart) != null
+                && HttpContext.Session.Get<IEnumerable<ShopingCart>>(WC.SessionCart).Count() > 0)
+            {
+                ShoppingCartList = HttpContext.Session.Get<List<ShopingCart>>(WC.SessionCart);
+            }
+
+
             DetailsVM DetailsVM = new DetailsVM()
             {
                 Product = _db.Product.Include(u => u.Category).Include(u => u.ApplicationType)
                 .Where(u => u.Id == id).FirstOrDefault(),
                 ExcistInCart = false
             };
+
+            foreach(var item in ShoppingCartList) 
+            {
+                if(item.ProductId == id) 
+                {
+                    DetailsVM.ExcistInCart = true;
+                }
+            }
             return View(DetailsVM);
         }
         [HttpPost,ActionName("Details")]
