@@ -67,6 +67,24 @@ namespace WebApp.Controllers
             HttpContext.Session.Set(WC.SessionCart, ShoppingCartList);
             return RedirectToAction(nameof(Index));
         }
+        public IActionResult RemoveFromCart(int id)
+        {
+            List<ShopingCart> ShoppingCartList = new List<ShopingCart>();
+            if (HttpContext.Session.Get<IEnumerable<ShopingCart>>(WC.SessionCart) != null
+                && HttpContext.Session.Get<IEnumerable<ShopingCart>>(WC.SessionCart).Count() > 0)
+            {
+                ShoppingCartList = HttpContext.Session.Get<List<ShopingCart>>(WC.SessionCart);
+            }
+            var itemToRemove = ShoppingCartList.SingleOrDefault(r => r.ProductId == id);
+            if(itemToRemove != null)
+            {
+                ShoppingCartList.Remove(itemToRemove);
+            }
+     
+            HttpContext.Session.Set(WC.SessionCart, ShoppingCartList);
+            return RedirectToAction(nameof(Index));
+        }
+        
         public IActionResult Privacy()
         {
             return View();
