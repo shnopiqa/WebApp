@@ -26,6 +26,7 @@ namespace WebApp.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserStore<IdentityUser> _userStore;
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
@@ -36,14 +37,17 @@ namespace WebApp.Areas.Identity.Pages.Account
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            RoleManager<IdentityRole> roleManager)
         {
+            _roleManager = roleManager;
             _userManager = userManager;
             _userStore = userStore;
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            
         }
 
         /// <summary>
@@ -106,6 +110,12 @@ namespace WebApp.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
+            if(!await _roleManager.RoleExistsAsync(WC.AdminRole)) 
+            {
+                await _roleManager.CreateAsync(new IdentityRole(WC.AdminRole));
+                await _roleManager.CreateAsync(new IdentityRole(WC.CustomerRole));
+            }
+
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
@@ -130,6 +140,16 @@ namespace WebApp.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
+                    if (User.IsInRole(WC.AdminRole)) 
+                    {
+                        // Пользователь с ролью администратор залогинен и пытается создать нового бюзера
+                        await _userManager.AddToRoleAsync(user, WC.AdminRole);
+                    }
+                    else 
+                    {
+                        await _userManager.AddToRoleAsync(user, WC.CustomerRole);
+                    }
+                   
                     _logger.LogInformation("User created a new account with password.");
 
                     var userId = await _userManager.GetUserIdAsync(user);
